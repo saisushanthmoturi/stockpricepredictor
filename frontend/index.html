@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Stock Price Prediction using LSTM Neural Networks with Attention Mechanism. Built with TensorFlow — predict future stock prices with deep learning.">
+    <title>Stock Predictor AI — LSTM Deep Learning</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ═══════════════════════════════════════════
+             HERO SECTION
+             ═══════════════════════════════════════════ -->
+        <header class="hero">
+            <div class="hero__badge">
+                <span></span>
+                LSTM + Attention Neural Network
+            </div>
+
+            <h1 class="hero__title">Stock Price Predictor</h1>
+
+            <p class="hero__subtitle">
+                Harness the power of deep learning to forecast stock price movements.
+                Powered by a Stacked LSTM with Attention mechanism, trained on real market data with technical indicators.
+            </p>
+
+            <!-- ── Prediction Form ──────────────────── -->
+            <div class="glass-card predict-form" id="predict-form-card">
+                <form id="prediction-form" class="form-row">
+                    <div class="form-group">
+                        <label for="ticker-input">Stock Ticker</label>
+                        <input
+                            type="text"
+                            id="ticker-input"
+                            placeholder="e.g. AAPL, GOOGL, TSLA"
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="period-select">History</label>
+                        <select id="period-select">
+                            <option value="1y">1 Year</option>
+                            <option value="2y" selected>2 Years</option>
+                            <option value="5y">5 Years</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="future-input">Forecast Days</label>
+                        <input
+                            type="number"
+                            id="future-input"
+                            value="30"
+                            min="1"
+                            max="90"
+                        >
+                    </div>
+                    <button type="submit" class="btn-predict" id="predict-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        Predict
+                    </button>
+                </form>
+
+                <!-- Popular tickers -->
+                <div class="popular-tickers">
+                    <span>Try:</span>
+                    <button type="button" class="ticker-chip" data-ticker="AAPL">AAPL</button>
+                    <button type="button" class="ticker-chip" data-ticker="GOOGL">GOOGL</button>
+                    <button type="button" class="ticker-chip" data-ticker="TSLA">TSLA</button>
+                    <button type="button" class="ticker-chip" data-ticker="MSFT">MSFT</button>
+                    <button type="button" class="ticker-chip" data-ticker="AMZN">AMZN</button>
+                    <button type="button" class="ticker-chip" data-ticker="NVDA">NVDA</button>
+                    <button type="button" class="ticker-chip" data-ticker="META">META</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ═══════════════════════════════════════════
+             LOADING STATE
+             ═══════════════════════════════════════════ -->
+        <section class="loading-section" id="loading-section">
+            <div class="loader">
+                <div class="loader__ring"></div>
+                <div class="loader__ring"></div>
+                <div class="loader__ring"></div>
+                <div class="loader__dot"></div>
+            </div>
+            <p class="loading-text" id="loading-text">Fetching market data...</p>
+            <p class="loading-subtext" id="loading-subtext">This may take 30-60 seconds as the model trains in real-time</p>
+        </section>
+
+        <!-- ═══════════════════════════════════════════
+             ERROR STATE
+             ═══════════════════════════════════════════ -->
+        <section class="error-section" id="error-section">
+            <div class="error-icon">⚠️</div>
+            <p class="error-message" id="error-message">Something went wrong</p>
+            <p class="error-hint" id="error-hint">Please check the ticker symbol and try again.</p>
+        </section>
+
+        <!-- ═══════════════════════════════════════════
+             RESULTS DASHBOARD
+             ═══════════════════════════════════════════ -->
+        <section class="results-section" id="results-section">
+
+            <!-- Ticker Info Bar -->
+            <div class="glass-card ticker-info-bar" id="ticker-info-bar">
+                <div class="ticker-info-bar__name">
+                    <span class="ticker-info-bar__symbol" id="result-ticker">AAPL</span>
+                    <span class="ticker-info-bar__label" id="result-period">2 Years of Data</span>
+                </div>
+                <div class="ticker-info-bar__stats" id="ticker-stats">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <!-- Metrics Cards -->
+            <div class="metrics-grid stagger-in" id="metrics-grid">
+                <div class="glass-card metric-card metric-card--rmse">
+                    <div class="metric-card__icon">📐</div>
+                    <div class="metric-card__value" id="metric-rmse">--</div>
+                    <div class="metric-card__label">RMSE</div>
+                    <div class="metric-card__desc">Root Mean Square Error</div>
+                </div>
+                <div class="glass-card metric-card metric-card--mae">
+                    <div class="metric-card__icon">📏</div>
+                    <div class="metric-card__value" id="metric-mae">--</div>
+                    <div class="metric-card__label">MAE</div>
+                    <div class="metric-card__desc">Mean Absolute Error ($)</div>
+                </div>
+                <div class="glass-card metric-card metric-card--mape">
+                    <div class="metric-card__icon">🎯</div>
+                    <div class="metric-card__value" id="metric-mape">--</div>
+                    <div class="metric-card__label">MAPE</div>
+                    <div class="metric-card__desc">Mean Abs % Error</div>
+                </div>
+                <div class="glass-card metric-card metric-card--r2">
+                    <div class="metric-card__icon">📊</div>
+                    <div class="metric-card__value" id="metric-r2">--</div>
+                    <div class="metric-card__label">R² Score</div>
+                    <div class="metric-card__desc">Coefficient of Determination</div>
+                </div>
+            </div>
+
+            <!-- Main Price Chart -->
+            <div class="glass-card chart-container">
+                <div class="section-header">
+                    <div class="section-header__icon">📈</div>
+                    <h2>Price Prediction Chart</h2>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="price-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Training Loss + Future Predictions charts -->
+            <div class="charts-row">
+                <div class="glass-card chart-small">
+                    <div class="section-header">
+                        <div class="section-header__icon">🧠</div>
+                        <h3>Training History</h3>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="loss-chart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-card chart-small">
+                    <div class="section-header">
+                        <div class="section-header__icon">🔮</div>
+                        <h3>Future Forecast</h3>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="future-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Predictions Table -->
+            <div class="glass-card predictions-table-wrapper">
+                <div class="section-header">
+                    <div class="section-header__icon">📋</div>
+                    <h2>Forecasted Prices</h2>
+                </div>
+                <table class="predictions-table" id="predictions-table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Date</th>
+                            <th>Predicted Price ($)</th>
+                            <th>Change (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="predictions-tbody">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Model Architecture -->
+            <div class="glass-card architecture-visual">
+                <div class="section-header">
+                    <div class="section-header__icon">🏗️</div>
+                    <h2>Model Architecture</h2>
+                </div>
+                <div class="arch-layers" id="arch-layers">
+                    <div class="arch-layer">
+                        <span class="arch-layer__icon">📥</span>
+                        <span>Input Layer</span>
+                        <span class="arch-layer__info" id="arch-input-info">60 × 11</span>
+                    </div>
+                    <div class="arch-arrow">▼</div>
+                    <div class="arch-layer">
+                        <span class="arch-layer__icon">🔄</span>
+                        <span>LSTM Layer 1</span>
+                        <span class="arch-layer__info" id="arch-lstm1-info">128 units</span>
+                    </div>
+                    <div class="arch-arrow">▼</div>
+                    <div class="arch-layer">
+                        <span class="arch-layer__icon">⚡</span>
+                        <span>Dropout</span>
+                        <span class="arch-layer__info">20%</span>
+                    </div>
+                    <div class="arch-arrow">▼</div>
+                    <div class="arch-layer">
+                        <span class="arch-layer__icon">🔄</span>
+                        <span>LSTM Layer 2</span>
+                        <span class="arch-layer__info" id="arch-lstm2-info">64 units</span>
+                    </div>
+                    <div class="arch-arrow">▼</div>
+                    <div class="arch-layer">
+                        <span class="arch-layer__icon">⚡</span>
+                        <span>Dropout</span>
+                        <span class="arch-layer__info">20%</span>
+                    </div>
+                    <div class="arch-arrow">▼</div>
+                    <div class="arch-layer">
+                        <span class="arch-layer__icon">👁️</span>
+                        <span>Attention Layer</span>
+                        <span class="arch-layer__info">Bahdanau</span>
+                    </div>
+                    <div class="arch-arrow">▼</div>
+                    <div class="arch-layer">
+                        <span class="arch-layer__icon">🧮</span>
+                        <span>Dense (ReLU)</span>
+                        <span class="arch-layer__info">32 units</span>
+                    </div>
+                    <div class="arch-arrow">▼</div>
+                    <div class="arch-layer">
+                        <span class="arch-layer__icon">📤</span>
+                        <span>Output</span>
+                        <span class="arch-layer__info">1 unit</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Config Info -->
+            <div class="model-info-grid stagger-in" id="model-info-grid">
+                <!-- Filled by JS -->
+            </div>
+        </section>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════ -->
+    <footer>
+        <p>
+            Stock Predictor AI — Built with LSTM + TensorFlow &nbsp;|&nbsp;
+            <a href="https://github.com" target="_blank">GitHub</a>
+        </p>
+        <p style="margin-top: 0.5rem; font-size: 0.7rem; opacity: 0.6;">
+            Disclaimer: Predictions are for educational purposes only. Not financial advice.
+        </p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>

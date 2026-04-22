@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Saved Models (too large for git)
+backend/saved_models/*.h5
+backend/saved_models/*.keras
+!backend/saved_models/.gitkeep
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
