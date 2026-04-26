@@ -1,4 +1,4 @@
-# 📈 Stock Price Predictor — LSTM + Attention Deep Learning
+# Stock Price Predictor — LSTM + Attention Deep Learning
 
 A production-ready stock price prediction system powered by **Stacked LSTM with Attention mechanism**, built with TensorFlow / Keras. Features a premium glassmorphism frontend dashboard and a Flask REST API backend.
 
@@ -9,7 +9,7 @@ A production-ready stock price prediction system powered by **Stacked LSTM with 
 
 ---
 
-## ✨ Features
+## Features
 
 - **Stacked LSTM + Attention** — Two LSTM layers with a custom Bahdanau-style Attention mechanism for capturing the most relevant historical patterns
 - **Technical Indicators** — RSI, SMA, EMA, MACD, Bollinger Bands as additional input features
@@ -21,7 +21,7 @@ A production-ready stock price prediction system powered by **Stacked LSTM with 
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 Input (60 days × 11 features)
@@ -59,7 +59,7 @@ Input (60 days × 11 features)
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 recommendationmodel/
@@ -137,7 +137,7 @@ Then visit `http://localhost:8080` in your browser.
 
 ---
 
-## 🌐 API Reference
+## API Reference
 
 ### Health Check
 ```http
@@ -161,7 +161,7 @@ Returns predictions, metrics (RMSE, MAE, MAPE, R²), training history, and model
 
 ---
 
-## 🚢 Deployment
+## Deployment
 
 ### Backend → Render
 1. Push your code to GitHub
@@ -178,7 +178,7 @@ Returns predictions, metrics (RMSE, MAE, MAPE, R²), training history, and model
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 This project is for **educational purposes only**. Stock market predictions are inherently uncertain. This model should not be used as financial advice or for actual trading decisions. Past performance does not guarantee future results.
 
