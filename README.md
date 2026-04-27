@@ -90,7 +90,7 @@ recommendationmodel/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Python 3.9 or higher
@@ -171,19 +171,11 @@ Returns predictions, metrics (RMSE, MAE, MAPE, R²), training history, and model
 5. Set **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120`
 6. Set the root directory to `backend/`
 
-### Frontend → GitHub Pages
+### Frontend  GitHub Pages
 1. Go to your repo **Settings → Pages**
 2. Set the source to the `main` branch and `/frontend` directory
 3. Update `API_BASE_URL` in `frontend/js/api.js` with your Render URL
 
----
 
-## Disclaimer
 
-This project is for **educational purposes only**. Stock market predictions are inherently uncertain. This model should not be used as financial advice or for actual trading decisions. Past performance does not guarantee future results.
 
----
-
-## 📄 License
-
-MIT License — feel free to use, modify, and distribute.
